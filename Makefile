@@ -1,7 +1,7 @@
 CARGO ?= cargo
 BIN := target/release/adhoc
 
-.PHONY: help all build release install test test-repeat e2e e2e-root e2e-nonroot e2e-coverage e2e-local \
+.PHONY: help all build release install install-service remove-service test test-repeat e2e e2e-root e2e-nonroot e2e-coverage e2e-local \
         fmt fmt-check clippy lint doc verify clean ci ci-full
 
 help: ## show this help
@@ -17,6 +17,23 @@ release: ## optimised build
 
 install: release ## install into ~/.cargo/bin
 	$(CARGO) install --path .
+
+SERVICE_DIR := $(HOME)/.config/systemd/user
+SERVICE := adhoc.service
+CONFIG ?= $(HOME)/.config/adhoc.yaml
+
+install-service: release ## install adhoc.service as a systemd user unit (CONFIG=... to override)
+	mkdir -p $(SERVICE_DIR)
+	if [ ! -f $(CONFIG) ]; then cp config.yaml $(CONFIG); echo "created $(CONFIG)"; fi
+	sed -e 's|@BIN@|$(HOME)/.cargo/bin/adhoc|' -e 's|@CONFIG@|$(CONFIG)|' systemd/$(SERVICE) > $(SERVICE_DIR)/$(SERVICE)
+	systemctl --user daemon-reload
+	systemctl --user enable $(SERVICE)
+	@echo "started: systemctl --user start adhoc"
+
+remove-service: ## remove the adhoc systemd user unit
+	systemctl --user disable --now $(SERVICE) 2>/dev/null || true
+	rm -f $(SERVICE_DIR)/$(SERVICE)
+	systemctl --user daemon-reload
 
 test: ## unit + integration tests
 	$(CARGO) test

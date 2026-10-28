@@ -1,0 +1,18 @@
+# adhoc systemd user unit.
+# Installed by `make install-service`, which substitutes @BIN@ and @CONFIG@.
+#
+#   systemctl --user enable --now adhoc
+#   systemctl --user status adhoc
+#   journalctl --user -u adhoc -f
+
+[Unit]
+Description=adhoc - lazy service launcher + TCP proxy
+
+[Service]
+ExecStart=@BIN@ run --config @CONFIG@
+Restart=on-failure
+RestartSec=5s
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

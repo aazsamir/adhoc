@@ -26,14 +26,21 @@ adhoc example                      # print a starter config
 - A crashed app is reaped and restarted on the next request.
 - `SIGINT`/`SIGTERM`/`SIGHUP` stop everything cleanly.
 
-systemd:
+### systemd (user service)
 
-```ini
-[Service]
-ExecStart=/usr/local/bin/adhoc run --config /etc/adhoc.yaml
-Restart=on-failure
-KillMode=control-group
+```bash
+make install-service            # or CONFIG=/path/to/adhoc.yaml
+systemctl --user start adhoc
+systemctl --user status adhoc
+journalctl --user -u adhoc -f
 ```
+
+`install-service` writes `~/.config/systemd/user/adhoc.service` (from `systemd/adhoc.service`),
+creates `~/.config/adhoc.yaml` from `config.yaml` if missing, and enables the unit so it
+starts on login. `make remove-service` disables and removes it.
+
+The unit restarts adhoc on failure (`Restart=on-failure`, `RestartSec=5s`) and kills the
+whole control group on stop, so all child apps die with it.
 
 ## Config
 
