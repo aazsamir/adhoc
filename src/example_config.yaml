@@ -1,0 +1,14 @@
+log_dir: logs
+
+services:
+  - name: web
+    listen: 127.0.0.1:8080        # a string, or a list ("host:port=appport" to remap)
+    command: ["python3", "-m", "http.server", "{port}", "--bind", "127.0.0.1"]
+    workdir: .
+    isolation: netns              # netns (default) | port
+    net: none                     # none | pasta | slirp4netns | custom
+    dns: auto                     # auto | off
+    idle_timeout: 10m             # 0 = never stop
+    startup_timeout: 30s
+    stop_timeout: 10s
+    log: file

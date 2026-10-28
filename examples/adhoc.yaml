@@ -1,0 +1,25 @@
+# Rootless demo. Each service runs in a private network namespace and binds
+# "its" port on loopback, exactly as it normally would - even when two services
+# claim the same port.
+#
+# For outbound network (HTTP calls, databases, DNS) install `passt` and add
+# `net: pasta` to a service (see examples/adhoc-net.yaml).
+log_dir: logs
+
+services:
+  - name: web
+    listen: 127.0.0.1:8081        # what clients connect to
+    internal_port: 8081           # what the app binds *inside* its namespace
+    command: ["python3", "-m", "http.server", "{port}", "--bind", "127.0.0.1"]
+    workdir: examples/web
+    isolation: netns
+    idle_timeout: 10s
+    startup_timeout: 10s
+
+  - name: other
+    listen: 127.0.0.1:8082
+    internal_port: 8081           # same internal port as "web" - no conflict
+    command: ["python3", "-m", "http.server", "{port}", "--bind", "127.0.0.1"]
+    workdir: examples/web
+    isolation: netns
+    idle_timeout: 0               # never stop

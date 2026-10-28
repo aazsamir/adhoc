@@ -1,0 +1,18 @@
+[package]
+name = "adhoc"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+description = "Lazy launcher + TCP proxy that runs services in private network namespaces on demand"
+
+[dependencies]
+anyhow = "1.0.104"
+libc = "0.2.191"
+serde = { version = "1.0.229", features = ["derive"] }
+serde-saphyr = "2.0.0"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

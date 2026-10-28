@@ -1,0 +1,49 @@
+# Convenience wrapper around e2e/run.sh. Both services use the same prepared
+# image; pick the execution context with profiles:
+#
+#   docker compose -f e2e/docker-compose.yml run --rm e2e
+#   docker compose -f e2e/docker-compose.yml --profile nonroot run --rm e2e-nonroot
+services:
+  e2e:
+    build:
+      context: ..
+      dockerfile: e2e/Dockerfile
+    image: adhoc-e2e:local
+    privileged: true
+    security_opt:
+      - apparmor=unconfined
+    environment:
+      HOME: /tmp
+    command: ["--test-threads=4", "--nocapture"]
+
+  e2e-nonroot:
+    profiles: ["nonroot"]
+    build:
+      context: ..
+      dockerfile: e2e/Dockerfile
+    image: adhoc-e2e:local
+    privileged: true
+    security_opt:
+      - apparmor=unconfined
+    user: "1000:1000"
+    environment:
+      HOME: /tmp
+    command: ["--test-threads=4", "--nocapture"]
+
+  e2e-coverage:
+    profiles: ["coverage"]
+    build:
+      context: ..
+      dockerfile: e2e/Dockerfile
+      args:
+        INSTRUMENT: "1"
+    image: adhoc-e2e:coverage
+    privileged: true
+    security_opt:
+      - apparmor=unconfined
+    environment:
+      HOME: /tmp
+      LLVM_PROFILE_FILE: /coverage/adhoc-%p-%m.profraw
+    volumes:
+      - ./coverage:/coverage
+    command: ["--test-threads=4", "--nocapture"]

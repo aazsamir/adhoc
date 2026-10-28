@@ -1,0 +1,6 @@
+/target
+logs/
+*.log
+
+# coverage reports pulled out of the e2e container
+e2e/coverage/
